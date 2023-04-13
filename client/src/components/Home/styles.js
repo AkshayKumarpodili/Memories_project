@@ -10,10 +10,10 @@ export default makeStyles((theme) => ({
   pagination: {
     borderRadius: 4,
     marginTop: '1rem',
-    padding: '10px',
+    padding: '16px',
   },
   gridContainer: {
-    [theme.breakpoints.down('sm')]: {
+    [theme.breakpoints.down('xs')]: {
       flexDirection: 'column-reverse',
     },
    

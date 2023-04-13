@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Container, Grow, Grid, Paper, AppBar, TextField, Button } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
-import { getPosts, getPostsBySearch } from '../../actions/posts';
+import {  getPostsBySearch } from '../../actions/posts';
 import Posts from '../Posts/Posts';
 import Pagination from '../Pagination';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -62,7 +62,7 @@ const Home = () => {
         <h1>q2 = {query.get('searchQuery')},{query.get('tags')},{query.get('page') || 'none'}</h1>
         <h1>l2 = {location.search}</h1> */}
         <Grid container justifyContent="space-between" alignItems="stretch" spacing={3} className={classes.gridContainer}>
-          <Grid item xs={12} sm={7} md={9}>
+          <Grid item xs={12} sm={6} md={9}>
             <Posts setCurrentId={setCurrentId} />
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
@@ -80,9 +80,7 @@ const Home = () => {
               {/* <Button variant="contained" className={classes.pagination} color="secondary" size="small" onClick={handleClear} fullWidth>Clear</Button> */}
             </AppBar>
             <Form currentId={currentId} setCurrentId={setCurrentId} />
-            
-          
-            <Paper elevation={6} className={classes.pagination} > <Pagination page={page} /> </Paper>
+               <Paper elevation={6} className={classes.pagination} > <Pagination page={page} /> </Paper>
           </Grid>
         </Grid>
       </Container>

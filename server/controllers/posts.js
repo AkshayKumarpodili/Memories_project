@@ -31,15 +31,15 @@ export const getPosts = async(req,res) => {
 
 
 export const getPostsBySearch = async(req,res) => {
-    const post = req.query;
-    console.log("p = ",post);
+    const {searchQuery, tags} = req.query;
+    
    
     try {
 
         //here we convert the searchQuery to RegExp because it is easy to search in mongodb with help of RegExp.
-        const title = new RegExp(post.searchQuery, "i");
+        const title = new RegExp(searchQuery, "i");
 
-        const posts = await PostMessage.find({ $or: [ { title }, { tags: { $in: post.tags.split(',') } } ]});
+        const posts = await PostMessage.find({ $or: [ { title }, { tags: { $in: tags.split(',') } } ]});
 
         res.json({data: posts});
 
@@ -48,57 +48,82 @@ export const getPostsBySearch = async(req,res) => {
     }
 };
 
-export const createPost = async(req,res) => {
-   const post = req.body;
 
-   const newPost = new PostMessage(post);
+export const getPost = async (req, res) => { 
+    const { id } = req.params;
 
-   try {
-    await newPost.save();
-    res.status(201).json(newPost);
-   } catch (error) {
-    res.status(409).json({message: error.message});
-   }
-};
-
-export const updatePost = async(req,res) => {
-    const {id: _id} = req.params;
-    const post = req.body; 
-
-    //checking if id what we extracted is valid mongoose id or not
-    if( !mongoose.Types.ObjectId.isValid(_id))
-        return res.status(404).send(`No Posts with ${_id}`);
-
-    else{
-        //new: True because it helps to receive latest version of new post
-        const updatedPost = await PostMessage.findByIdAndUpdate(_id, post, {new: true});
-        res.json(updatedPost);
-    }    
-
+    try {
+        const post = await PostMessage.findById(id);
+        
+        res.status(200).json(post);
+    } catch (error) {
+        res.status(404).json({ message: error.message });
+    }
 }
 
-export const deletePost = async(req,res) => {
-    const {id: _id} = req.params;
-     
-    //checking if id what we extracted is valid mongoose id or not
-    if( !mongoose.Types.ObjectId.isValid(_id))
-        return res.status(404).send(`No Posts with ${_id}`);
 
-    else{
-        const deletedPost = await PostMessage.findByIdAndRemove(_id);
-        res.json(deletedPost);
-    }    
+export const createPost = async (req, res) => {
+    const post = req.body;
 
+    const newPostMessage = new PostMessage({ ...post, creator: req.userId, createdAt: new Date().toISOString() })
+
+    try {
+        await newPostMessage.save();
+
+        res.status(201).json(newPostMessage );
+    } catch (error) {
+        res.status(409).json({ message: error.message });
+    }
+};
+
+export const updatePost = async (req, res) => {
+    const { id } = req.params;
+    const { title, message, creator, selectedFile, tags } = req.body;
+    
+    if (!mongoose.Types.ObjectId.isValid(id)) return res.status(404).send(`No post with id: ${id}`);
+
+    const updatedPost = { creator, title, message, tags, selectedFile, _id: id };
+
+    await PostMessage.findByIdAndUpdate(id, updatedPost, { new: true });
+
+    res.json(updatedPost);
+}
+
+export const deletePost = async (req, res) => {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) return res.status(404).send(`No post with id: ${id}`);
+
+    await PostMessage.findByIdAndRemove(id);
+
+    res.json({ message: "Post deleted successfully." });
 }
 
 export const likePost = async (req, res) => {
     const { id } = req.params;
 
+    //checking if user is authenticated or not
+    if (!req.userId) {
+        return res.json({ message: "Unauthenticated" });
+    }
+
+
     if (!mongoose.Types.ObjectId.isValid(id)) return res.status(404).send(`No post with id: ${id}`);
     
     const post = await PostMessage.findById(id);
 
-    const updatedPost = await PostMessage.findByIdAndUpdate(id, { likeCount: post.likeCount + 1 }, { new: true });
+    //comparing the userId with all id's of database
+    const index = post.likes.findIndex((id) => id ===String(req.userId));
+
+    
+    //if not found, then we add his Id, else remove his id
+    if (index === -1) {
+        post.likes.push(req.userId);
+    } else {
+        post.likes = post.likes.filter((id) => id !== String(req.userId));
+    }
+
+    const updatedPost = await PostMessage.findByIdAndUpdate(id, post, { new: true });
     
     res.json(updatedPost);
 }
