@@ -1,5 +1,5 @@
 
-import { FETCH_ALL, FETCH_BY_SEARCH, CREATE, UPDATE, DELETE, LIKE, START_LOADING, END_LOADING, FETCH_POST } from '../constants/actionTypes';
+import { FETCH_ALL, FETCH_BY_SEARCH, CREATE, UPDATE, DELETE, LIKE, START_LOADING, END_LOADING, FETCH_POST, COMMENT } from '../constants/actionTypes';
 
 export default (state = { isLoading: true, posts: [] }, action) => {
   switch (action.type) {
@@ -16,10 +16,22 @@ export default (state = { isLoading: true, posts: [] }, action) => {
       };
     case FETCH_BY_SEARCH:
       return { ...state, posts: action.payload.data };
+   
     case FETCH_POST:
       return { ...state, post: action.payload };
     case LIKE:
       return { ...state, posts: state.posts.map((post) => (post._id === action.payload._id ? action.payload : post)) };
+    case COMMENT:
+      return {...state,
+        posts: state.posts.map((post) => {
+
+          //iterating through all posts and finding the id of post which has received the comment
+          if (post._id === action.payload._id) {
+            return action.payload;
+          }
+          return post;
+        }), 
+      }
     case CREATE:
       return { ...state, posts: [...state.posts, action.payload] };
     case UPDATE:

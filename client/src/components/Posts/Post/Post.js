@@ -33,8 +33,6 @@ const Post = ({post, setCurrentId}) => {
 
 
     const openPost = (e) => {
-      // dispatch(getPost(post._id, navigate));
-  
       navigate(`/posts/${post._id}`);
     };
 
@@ -59,7 +57,8 @@ const Post = ({post, setCurrentId}) => {
               <Button style={{ color: 'white' }} size="small"   onClick={(e) => {
                       e.stopPropagation();
                       setCurrentId(post._id);
-                    }}><MoreHorizIcon fontSize="default" />
+              }}>
+                    <MoreHorizIcon fontSize="default" />
               </Button>
             </div>
           ) : null}
